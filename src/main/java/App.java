@@ -22,6 +22,12 @@ public class App {
       //create our HashMap named model:
       Map<String, Object> model = new HashMap<String, Object>();
 
+      ArrayList<Task> tasks = request.session().attribute("tasks");
+      if (tasks == null) {
+        tasks = new ArrayList<Task>();
+        request.session().attribute("tasks", tasks);
+      }
+
       // fetch the user-inputted task description from the form and save it into a String with the line String description = request.queryParams("description");.
       String description = request.queryParams("description");
 
