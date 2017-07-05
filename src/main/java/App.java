@@ -4,6 +4,14 @@ import spark.ModelAndView;
 import spark.template.velocity.VelocityTemplateEngine;
 import static spark.Spark.*;
 
+//Changes:
+//We added the get("/categories") route to handle categories.
+//We added the get("/categories/new") route to serve the form for adding new categories.
+//We added a post("/categories") route to gather input from the category-form.vtl form and create a new instance of Category.
+//We added a get("/categories/:id") route to handle displaying an individual category page.
+//We replaced a previous get("/tasks/new") route with a get("/categories/:id/tasks/new") route to handle a form for adding new tasks to categories.
+//We modified the post("/tasks") route to "find" the Category object that we are adding the newTask to. We then add the task to that found category.
+
 public class App {
   public static void main(String[] args) {
     staticFileLocation("/public");
@@ -16,9 +24,11 @@ public class App {
       return new ModelAndView(model, layout);
     }, new VelocityTemplateEngine());
 
-    get("tasks/new", (request, response) -> {
+    get("categories/:id/tasks/new", (request, response) -> {
       Map<String, Object> model = new HashMap<String, Object>();
-      model.put("template", "templates/task-form.vtl");
+      Category category = Category.find(Integer.parseInt(request.params(":id")));
+      model.put("category", category);
+      model.put("template", "templates/category-tasks-form.vtl");
       return new ModelAndView(model, layout);
     }, new VelocityTemplateEngine());
 
@@ -49,6 +59,50 @@ public class App {
       Task task = Task.find(Integer.parseInt(request.params(":id")));
       model.put("task", task);
       model.put("template", "templates/task.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
+
+    get("/categories/new", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+      model.put("template", "templates/category-form.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
+
+    post("/categories", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+      String name = request.queryParams("name");
+      Category newCategory = new Category(name);
+      model.put("template", "templates/category-success.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
+
+    get("/categories", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+      model.put("categories", Category.all());
+      model.put("template", "templates/categories.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
+
+    get("/categories/:id", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+      Category category = Category.find(Integer.parseInt(request.params(":id")));
+      model.put("category", category);
+      model.put("template", "templates/category.vtl");
+      return new ModelAndView(model, layout);
+    }, new VelocityTemplateEngine());
+
+    post("/tasks", (request, response) -> {
+      Map<String, Object> model = new HashMap<String, Object>();
+
+      Category category = Category.find(Integer.parseInt(request.queryParams("categoryId")));
+
+      String description = request.queryParams("description");
+      Task newTask = new Task(description);
+
+      category.addTask(newTask);
+
+      model.put("category", category);
+      model.put("template", "templates/category-tasks-success.vtl");
       return new ModelAndView(model, layout);
     }, new VelocityTemplateEngine());
   }
