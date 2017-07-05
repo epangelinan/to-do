@@ -58,4 +58,9 @@ public class CategoryTest {
     testCategory.addTask(testTask);
     assertTrue(testCategory.getTasks().contains(testTask));
   }
+
+  @Test
+  public void find_returnsNullWhenNoTaskFound_null() {
+    assertTrue(Category.find(999) == null);
+  }
 }

@@ -33,7 +33,11 @@ public class Category {
   }
 
   public static Category find(int id) {
-    return instances.get(id - 1);
+    try {
+      return instances.get(id - 1);
+    } catch (IndexOutOfBoundsException exception) {
+      return null;
+    }
   }
 
   //since our mTasks list is private, we need public getter methods to retrieve it. We've added a getTasks() method that returns a Category's list of Tasks.
